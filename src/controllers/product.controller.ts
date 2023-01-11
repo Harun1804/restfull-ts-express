@@ -2,26 +2,18 @@ import { Request, Response } from 'express'
 import { createProductValidation } from '../validations/product.validation'
 import { logger } from '../utils/logger'
 import { notFound, success, validation } from '../utils/responseApi'
+import { getProduct } from '../services/product.service'
+import { ProductInterface } from '../interfaces/product.interface'
 
-export const indexProduct = (req: Request, res: Response) => {
-  const products = [
-    {
-      name: 'Sepatu',
-      price: 200000
-    },
-    {
-      name: 'kaos',
-      price: 20000
-    }
-  ]
-
+export const indexProduct = async (req: Request, res: Response) => {
+  const products: any = await getProduct()
   const {
-    params: { name }
+    params: { id }
   } = req
 
-  if (name) {
-    const filterProduct = products.filter((product) => {
-      if (product.name === name) {
+  if (id) {
+    const filterProduct = products.filter((product: ProductInterface) => {
+      if (product.product_id === id) {
         return product
       }
     })

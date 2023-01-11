@@ -3,6 +3,9 @@
 
 echo 'Styling, testing and building your project before commiting'
 
+# Reformating code
+npm run format
+
 # Check Prettier
 npm run check-format ||
 (
