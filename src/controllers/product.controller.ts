@@ -1,41 +1,48 @@
 import { Request, Response } from 'express'
 import { createProductValidation } from '../validations/product.validation'
 import { logger } from '../utils/logger'
-import { notFound, success, validation } from '../utils/responseApi'
-import { getProduct } from '../services/product.service'
-import { ProductInterface } from '../interfaces/product.interface'
+import { fails, notFound, success, validation } from '../utils/responseApi'
+import { getProduct, getProductById, storeProduct } from '../services/product.service'
+import { v4 as uuidv4 } from 'uuid'
+
 
 export const indexProduct = async (req: Request, res: Response) => {
-  const products: any = await getProduct()
   const {
     params: { id }
   } = req
 
   if (id) {
-    const filterProduct = products.filter((product: ProductInterface) => {
-      if (product.product_id === id) {
-        return product
-      }
-    })
-    if (filterProduct.length === 0) {
-      logger.info('Product not found')
-      res.status(404).send(notFound('Product not found'))
-    } else {
+    const product = await getProductById(id);
+    if(product){
       logger.info('Success get product')
-      res.send(success('Success get product', filterProduct[0]))
+      res.send(success('Success get product', product))
+    }else{
+      logger.info('Product Not Found')
+      res.status(404).send(notFound('Product not found', {},404))
     }
+  }else{
+    const products: any = await getProduct()
+
+    logger.info('Success get product')
+    res.send(success('Get products', products))
   }
-  logger.info('Success get product')
-  res.send(success('Get products', products))
 }
 
-export const createProduct = (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response) => {
+  req.body.product_id = uuidv4()
   const { error, value } = createProductValidation(req.body)
-  logger.error(value)
   if (error) {
     logger.error('ERR: product - create = ', error.details[0].message)
     res.status(422).send(validation(error.details[0].message))
   }
-  logger.info('success add new product')
-  res.send(success('Product has been created', req.body))
+
+  try {
+    await storeProduct(value)
+
+    logger.info('success add new product')
+    res.send(success('Product has been created', req.body, 201))
+  } catch (e) {
+    logger.error('ERR: Product - Create = ', e)
+    res.status(500).send(fails(`${e}`))
+  }
 }

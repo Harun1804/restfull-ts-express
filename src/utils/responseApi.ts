@@ -9,7 +9,7 @@ export const success = (message: String = 'Success', data: any = {}, code = 200)
   }
 }
 
-export const error = (message: String = 'Something went wrong', data: any = {}, code = 500) => {
+export const fails = (message: String = 'Something went wrong', data: any = {}, code = 500) => {
   return {
     meta: {
       status: false,
